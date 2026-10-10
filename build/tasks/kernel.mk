@@ -497,7 +497,7 @@ endif
 $(KERNEL_OUT):
 	mkdir -p $(KERNEL_OUT)
 
-$(KERNEL_CONFIG): $(KERNEL_OUT) $(ALL_KERNEL_DEFCONFIG_SRCS)
+$(KERNEL_CONFIG): $(ALL_KERNEL_DEFCONFIG_SRCS) | $(KERNEL_OUT)
 	@echo "Building Kernel Config"
 	$(call make-kernel-config,$(KERNEL_OUT),$(KERNEL_DEFCONFIG))
 
