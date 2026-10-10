@@ -171,7 +171,11 @@ ifneq ($(KERNEL_NO_GCC), true)
         endif
     endif
 
-    KERNEL_MAKE_FLAGS += CPATH="/usr/include:/usr/include/x86_64-linux-gnu" HOSTLDFLAGS="-L/usr/lib/x86_64-linux-gnu -L/usr/lib64 -fuse-ld=lld"
+    ifeq ($(HOST_OS),darwin)
+        KERNEL_MAKE_FLAGS += HOSTCFLAGS="-O2 -std=gnu89 -I$(BUILD_TOP)/vendor/lineage/build/tools/kernel-host/include"
+    else
+        KERNEL_MAKE_FLAGS += CPATH="/usr/include:/usr/include/x86_64-linux-gnu" HOSTLDFLAGS="-L/usr/lib/x86_64-linux-gnu -L/usr/lib64 -fuse-ld=lld"
+    endif
 
     ifeq ($(KERNEL_ARCH),arm64)
         # Add 32-bit GCC to PATH so that arm-linux-androidkernel-as is available for CONFIG_COMPAT_VDSO
@@ -181,8 +185,12 @@ ifneq ($(KERNEL_NO_GCC), true)
     endif
 
     # Set the full path to the clang command and LLVM binutils
-    KERNEL_MAKE_FLAGS += HOSTCC=$(TARGET_KERNEL_CLANG_PATH)/bin/clang
-    KERNEL_MAKE_FLAGS += HOSTCXX=$(TARGET_KERNEL_CLANG_PATH)/bin/clang++
+    ifeq ($(HOST_OS),darwin)
+        KERNEL_MAKE_FLAGS += HOSTCC=/usr/bin/clang HOSTCXX=/usr/bin/clang++
+    else
+        KERNEL_MAKE_FLAGS += HOSTCC=$(TARGET_KERNEL_CLANG_PATH)/bin/clang
+        KERNEL_MAKE_FLAGS += HOSTCXX=$(TARGET_KERNEL_CLANG_PATH)/bin/clang++
+    endif
     ifneq ($(TARGET_KERNEL_CLANG_COMPILE), false)
         ifneq ($(TARGET_KERNEL_LLVM_BINUTILS), false)
             KERNEL_MAKE_FLAGS += LD=$(TARGET_KERNEL_CLANG_PATH)/bin/ld.lld
