@@ -117,7 +117,12 @@ endif
 KERNEL_MAKE_FLAGS :=
 
 # Add back threads, ninja cuts this to $(getconf _NPROCESSORS_ONLN)/2
-KERNEL_MAKE_FLAGS += -j$(shell getconf _NPROCESSORS_ONLN)
+ifeq ($(HOST_OS),darwin)
+    KERNEL_JOBS ?= 2
+else
+    KERNEL_JOBS ?= $(shell getconf _NPROCESSORS_ONLN)
+endif
+KERNEL_MAKE_FLAGS += -j$(KERNEL_JOBS)
 
 TOOLS_PATH_OVERRIDE := \
     HIP_PATH=none PERL5LIB=$(BUILD_TOP)/prebuilts/tools-lineage/common/perl-base
