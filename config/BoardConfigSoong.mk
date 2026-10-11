@@ -135,7 +135,9 @@ endif
 SOONG_CONFIG_lineageQcomVars_qti_vibrator_effect_lib := $(TARGET_QTI_VIBRATOR_EFFECT_LIB)
 
 # libfmjni
-ifeq ($(BOARD_HAVE_QCOM_FM),true)
+ifneq ($(strip $(TARGET_FM_JNI_NAMESPACE)),)
+    PRODUCT_SOONG_NAMESPACES += $(TARGET_FM_JNI_NAMESPACE)
+else ifeq ($(BOARD_HAVE_QCOM_FM),true)
     PRODUCT_SOONG_NAMESPACES += \
         vendor/qcom/opensource/libfmjni
 else ifeq ($(BOARD_HAVE_BCM_FM),true)
