@@ -99,3 +99,8 @@ ifneq ($(TARGET_INIT_VENDOR_LIB),)
     $(warning TARGET_INIT_VENDOR_LIB is deprecated, please migrate to soong_config_set,libinit,vendor_init_lib)
     $(call soong_config_set,libinit,vendor_init_lib,$(TARGET_INIT_VENDOR_LIB))
 endif
+
+# Device-specific FM JNI backend
+ifneq ($(strip $(TARGET_FM_JNI_NAMESPACE)),)
+    PRODUCT_SOONG_NAMESPACES += $(TARGET_FM_JNI_NAMESPACE)
+endif
