@@ -234,12 +234,6 @@ else
 endif
 
 ifeq ($(or $(FULL_RECOVERY_KERNEL_BUILD), $(FULL_KERNEL_BUILD)),true)
-
-# Track directories as well as files so additions and removals invalidate the
-# kernel image. Ignore Git metadata, which does not affect the build.
-KERNEL_SOURCE_DEPS := $(shell find -L $(KERNEL_SRC) -name .git -prune -o -print)
-KERNEL_KCONFIG_DEPS := $(foreach f,$(KERNEL_SOURCE_DEPS),$(if $(filter Kconfig%,$(notdir $(f))),$(f)))
-
 # Add host bin out dir to path
 PATH_OVERRIDE := PATH=$(KERNEL_BUILD_OUT_PREFIX)$(HOST_OUT_EXECUTABLES):$$PATH
 ifneq ($(TARGET_KERNEL_CLANG_COMPILE),false)
@@ -479,11 +473,11 @@ endif
 $(KERNEL_OUT):
 	mkdir -p $(KERNEL_OUT)
 
-$(KERNEL_CONFIG): $(ALL_KERNEL_DEFCONFIG_SRCS) $(KERNEL_KCONFIG_DEPS) | $(KERNEL_OUT)
+$(KERNEL_CONFIG): $(ALL_KERNEL_DEFCONFIG_SRCS) | $(KERNEL_OUT)
 	@echo "Building Kernel Config"
 	$(call make-kernel-config,$(KERNEL_OUT),$(KERNEL_DEFCONFIG))
 
-$(TARGET_PREBUILT_INT_KERNEL): $(KERNEL_SOURCE_DEPS) $(KERNEL_CONFIG) $(DEPMOD) $(DTC) $(KERNEL_MODULES_PARTITION_FILE_LIST) $(SYSTEM_KERNEL_MODULES_PARTITION_FILE_LIST)
+$(TARGET_PREBUILT_INT_KERNEL): $(KERNEL_CONFIG) $(DEPMOD) $(DTC) $(KERNEL_MODULES_PARTITION_FILE_LIST) $(SYSTEM_KERNEL_MODULES_PARTITION_FILE_LIST)
 	@echo "Building Kernel Image ($(BOARD_KERNEL_IMAGE_NAME))"
 	$(call make-kernel-target,$(BOARD_KERNEL_IMAGE_NAME))
 	$(hide) if [ -d "$(KERNEL_SRC)/arch/$(KERNEL_ARCH)/boot/dts/" ]; then \
@@ -549,8 +543,6 @@ $(TARGET_PREBUILT_INT_KERNEL): $(KERNEL_SOURCE_DEPS) $(KERNEL_CONFIG) $(DEPMOD) 
 				($(call build-image-kernel-modules-lineage,$$recovery_modules,$(KERNEL_RECOVERY_MODULES_OUT),,$(KERNEL_RECOVERY_DEPMOD_STAGING_DIR),$(BOARD_RECOVERY_RAMDISK_KERNEL_MODULES_LOAD),,)) || exit "$$?"; \
 			) \
 		fi
-	# DTB-only changes may leave the kernel image contents unchanged.
-	$(hide) touch $@
 
 .PHONY: kerneltags
 kerneltags: $(KERNEL_CONFIG)
@@ -670,14 +662,13 @@ ifeq ($(FULL_RECOVERY_KERNEL_BUILD),true)
 $(RECOVERY_KERNEL_OUT):
 	mkdir -p $(RECOVERY_KERNEL_OUT)
 
-$(RECOVERY_KERNEL_CONFIG): $(ALL_RECOVERY_KERNEL_DEFCONFIG_SRCS) $(KERNEL_KCONFIG_DEPS)
+$(RECOVERY_KERNEL_CONFIG): $(ALL_RECOVERY_KERNEL_DEFCONFIG_SRCS)
 	@echo "Building Recovery Kernel Config"
 	$(call make-kernel-config,$(RECOVERY_KERNEL_OUT),$(RECOVERY_DEFCONFIG))
 
-$(TARGET_PREBUILT_INT_RECOVERY_KERNEL): $(KERNEL_SOURCE_DEPS) $(RECOVERY_KERNEL_CONFIG) $(DEPMOD) $(DTC)
+$(TARGET_PREBUILT_INT_RECOVERY_KERNEL): $(RECOVERY_KERNEL_CONFIG) $(DEPMOD) $(DTC)
 	@echo "Building Recovery Kernel Image ($(BOARD_KERNEL_IMAGE_NAME))"
 	$(call make-recovery-kernel-target,$(BOARD_KERNEL_IMAGE_NAME))
-	$(hide) touch $@
 
 
 endif
