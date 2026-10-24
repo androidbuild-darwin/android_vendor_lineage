@@ -182,7 +182,10 @@ ifneq ($(KERNEL_NO_GCC), true)
     endif
 
     ifeq ($(HOST_OS),darwin)
-        KERNEL_MAKE_FLAGS += HOSTCFLAGS="-O2 -std=gnu89 -I$(BUILD_TOP)/vendor/lineage/build/tools/kernel-host/include"
+        KERNEL_HOST_DARWIN_SYSROOT := $(shell xcrun --sdk macosx --show-sdk-path)
+        KERNEL_MAKE_FLAGS += HOSTCFLAGS="-O2 -std=gnu89 -isysroot $(KERNEL_HOST_DARWIN_SYSROOT) -I$(BUILD_TOP)/vendor/lineage/build/tools/kernel-host/include"
+        KERNEL_MAKE_FLAGS += HOSTCXXFLAGS="-O2 -isysroot $(KERNEL_HOST_DARWIN_SYSROOT)"
+        KERNEL_MAKE_FLAGS += HOSTLDFLAGS="-isysroot $(KERNEL_HOST_DARWIN_SYSROOT)"
     else
         KERNEL_MAKE_FLAGS += HOSTCFLAGS="-I/usr/include -I/usr/include/x86_64-linux-gnu" HOSTLDFLAGS="-L/usr/lib/x86_64-linux-gnu -L/usr/lib64 -fuse-ld=lld"
     endif
